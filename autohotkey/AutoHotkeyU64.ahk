@@ -12,7 +12,7 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ;
 ; ctrl + w  :Closes the command console (including Powershell consoles).
 ;
-; alt + z  : Print cuurent datetime stamp in format: 20180227 12:51:50
+; alt + z  : Print current datetime stamp in format: 20180227 12:51:50
 ;
 ; Windows Logo Key + [ :Write an Atlassian Noformat block
 ;
