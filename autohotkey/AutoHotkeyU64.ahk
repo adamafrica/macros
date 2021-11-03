@@ -1,3 +1,10 @@
+#NoEnv  ; Avoid check empty variables to see if they are environment variables. Recommended.
+#SingleInstance Force ; Determines whether a script is allowed to run again when it is already running.
+SendMode Input  ; Makes Send synonymous with SendInput or SendPlay. Recommended.
+SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
+; #Warn  ; Enable/Disable warnings for specific conditions which may indicate an error. Recommended.
+
+
 ; ----------------------------------------------------------------------
 ; Summary of AutoHotkey scripts in this file:
 ; ----------------------------------------------------------------------
@@ -7,37 +14,22 @@
 ;
 ; alt + z  : Print cuurent datetime stamp in format: 20180227 12:51:50
 ;
-; Logo Key + [ :Write an Atlassian Noformat block
+; Windows Logo Key + [ :Write an Atlassian Noformat block
+;
 ; Windows Logo Key + ] :Write an Atlassian SQL block
+;
 ; ctrl + shift + { : Write a select statement and prepare for editing.
 ;
 ; ctrl + alt + t :Create a 1x1 table in OneNote.
 ;
 ; ctrl + alt + numpad1 : Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.
+;
 ; ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.
+;
 ; ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.
+;
 ; ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.
 
-
-; TODO: Add a macro that will identify current location in currently opened app, then copy a link from chrome to that spot.
-
-
-; ----------------------------------------------------------------------
-; - This is a comment.  Lines that start with a semi-colon are not executed.
-;
-; - Right only works if you've previously edited the line and spot to right.
-;   Think what happens in a text editor when you right arrow to end of line.
-;   You can't right arrow beyond the rightmost letter unless there is whitespace
-;   to enter into.
-;
-;   Lines that start with #If must have: a return statement inside the if block
-;   and a closing if otherwise you'll introduce very nasty bugs. If a script
-;   block below one one with a #If stops working or if changes are made to
-;   the script when you save it, another script below the one you are working
-;   on fires, make sure you have both a return and closing #If.  See the
-;   Command Window Helpers script below for a good example of how it should
-;   be done.
-; ----------------------------------------------------------------------
 
 ; ----------------------------------------------------------------------
 ; - Common hotkeys:
@@ -49,13 +41,6 @@
 ; & = An ampersand may be used between two keys or mouse buttons to combine them into a hotkey.
 
 ; ----------------------------------------------------------------------
-; - AutoHotkey Learnings:
-; ----------------------------------------------------------------------
-; SendInput uses the same syntax as Send but is generally faster and more reliable.
-; see https://www.autohotkey.com/docs/commands/Send.htm for details.
-
-
-; ----------------------------------------------------------------------
 ; Command Window Helpers
 ; ----------------------------------------------------------------------
 ; - Close the Command console (including PowerShell) when shortcut activated.
@@ -65,8 +50,8 @@
 ; - Comments:
 ; - This shortcut replicates the default Windows behavior of ctrl + w for the
 ;   Windows Command console, PowerShell included.
-; This next line prevents the ctrl+w shortcut from firing unless a Command console
-; or PowerShell console is active.
+;
+; Prevent shortcut from firing unless a Command console or PowerShell console is active.
 #If WinActive("ahk_class ConsoleWindowClass")
     ^w::
     WinGetTitle sTitle
@@ -140,7 +125,7 @@ return
 {
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
 
-    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's not.
+    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's running.
     {
         clipboard := "" ; Empty the clipboard in preparation for copying.
 
@@ -177,6 +162,7 @@ return
             MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
             return
          }
+
         ; - Only create office style hyperlink if OneNote is active.
         ; - because this style of hyperlink is specific to Windows Office products.
         if WinActive("ahk_exe ONENOTE.EXE")
@@ -208,7 +194,8 @@ return
 
     Comments:
     Created this macro to help speed up the process of annotating references in OneNote references sections.
-    This macro is a simplified version: "Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome."
+    This macro is a simplified version: "Create a (source) tag - a hyperlink where display text is (source) in
+    OneNote from a URL in Chrome."
 
     Assumptions:
 
@@ -219,10 +206,9 @@ return
 ^!Numpad4::
 ^!F4::
 {
-
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
 
-    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's not.
+    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's not running.
     {
         ; Move focus to the address bar so URL can be copied. alt + d. This is chrome specific.
         SendInput !d
@@ -271,8 +257,6 @@ return
     return
 }
 
-
-
 /*
     Description: Inserts a copy of the refences table from Template - References.
 
@@ -280,15 +264,16 @@ return
 
     Usage:
     1. In OneNote, place the cursor where you want references table to be inserted.
-    2. Execute the macro using the following Hot Key: ctrl + alt + numpad2
+    2. Execute this macro using the following Hot Key: ctrl + alt + numpad2
     3. A copy of the references table will be inserted at the current location of the cursor.
 
     Comments:
-    Created this macro because I was copying the references table to most, but not all pages, especially after I started using notero.
+    Created this macro because I was copying the references table to most, but not all pages, especially after I
+    started using zotero.
 
     Assumptions:
-    1. A OneNote page titled "Template - References" exists.
-    2. The "Template - References" page contains a single table References.
+    1. A OneNote page titled "Template - Footnote Table" exists.
+    2. The "Template - Footnote Table" page contains a single table References.
 
     History
     20191106        A   - Initial Version
@@ -456,7 +441,7 @@ Return
 ; ---------------------------------------------------------------------
 ; - Write a select statement and prepare for editing.
 ; - Speeds up writing a common select statement.
-; - HotKey: ctrl + shift + {
+; - HotKey: ctrl + shift + .
 ^!.::
 SendInput select top 10 * {enter}from{enter};{up 1}{right 3}{space 1}
 return
@@ -479,7 +464,6 @@ return
 ; ---------------------------------------------------------------------
 ; - Troubleshooting Helpers
 ; ---------------------------------------------------------------------
-
 ; - Displays a message box.
 ; - Useful when attempting to verify to verify basic AutoHotkey functionality.
 ; - HotKey: ctrl + alt + ,
