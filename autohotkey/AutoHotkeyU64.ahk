@@ -40,6 +40,66 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ; + = shift key
 ; & = An ampersand may be used between two keys or mouse buttons to combine them into a hotkey.
 
+
+; Comment Block Template
+/*
+    Description:
+
+    Hotkey:
+
+    Usage:
+        1.
+
+    Comments:
+
+    Assumptions:
+        1.
+    History
+    YYYYMMDD        name        - Comment
+
+*/
+
+
+/*
+    Description: Display a message box with commonly AutoHotKey macros and their shortcut key combos.
+
+    HotKey: ctrl + alt + esc
+
+    Usage:
+    1. Use shortcute [ctrl + alt + esc] to display the message box.
+
+    Comments:
+    It's easy to forget AutoHotKey shortcuts - and even the macros themselves - so this this
+    message box displays the ones I commonly forget.
+
+    Assumptions:
+    It is not convienient to list all the shortcuts - adding them to the message box is tedious - so,
+    the message box will only display those that are useful, but might not have easy to remember
+    shortcuts.
+
+    History
+    20211102        A   - Initial Version
+*/
+^!ESC::
+{
+    help := []
+    help.push("ctrl + alt + numpad1 : Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.")
+    help.push("ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.")
+    help.push("ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.")
+    help.push("ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.")
+    help.push("ctrl + alt + r : Reload the AutoHotKey script.")
+    helpString := ""
+
+    Loop, % help.MaxIndex()
+    {
+        helpString .= help[A_Index]"`r`n`r`n"
+    }
+
+    MsgBox % helpString
+
+    return
+}
+
 ; ----------------------------------------------------------------------
 ; Command Window Helpers
 ; ----------------------------------------------------------------------
@@ -154,7 +214,8 @@ return
         ; Return to OneNote from the browser.
         if WinExist("ahk_exe ONENOTE.EXE")
         {
-            ; MsgBox, OneNote is open. ; Uncomment next line for troubleshooting only.
+            ; Uncomment next line for troubleshooting only.
+            ; MsgBox, OneNote is open.
             WinActivate, ahk_exe ONENOTE.EXE
         }
         else
@@ -322,7 +383,7 @@ return
 /*
     Description: Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.
 
-    HotKey: ctrl + alt + numpad3
+    HotKey: ctrl + alt + numpad3 or ctrl + alt + F3
 
     Usage:
     1. In OneNote, place the cursor in the table cell where the code snippet is located.
@@ -410,6 +471,70 @@ return
 }
 
 /*
+    Description: Create a (source) style hyperlink in OneNote from the clipboard.
+
+    Hotkey: ctrl + alt + numpad5 or ctrl + alt + F5
+
+    Usage:
+        1.
+
+    Comments:
+        Developed this macro to speed the process of creating OneNote (source) style
+        hyperlinks from YouTube's share dialog box, where the option to include "Start
+        at [time]" has been checked.
+
+        TODO: What would it take to automate clicking of Share button, checking the
+        start at checkbox and copying the url to clipboard?
+        TODO: Look at chrome.ahk.
+
+    Assumptions:
+        1. OneNote is open
+        2. Cursor is at location where link should be created in OneNote.
+        3. There is a valid URL on the Windows clipboard.
+
+    History
+    YYYYMMDD        name        - Comment
+    20211122        a           - Initial Version.
+*/
+^!Numpad5::
+^!F5::
+{
+    ; Uncomment next line for debugging only.
+    ;MsgBox, F5 Pressed.
+
+    clipboard := clipboard ; Copy clipboard contents back to clipboard as text. Precautionary.
+
+    ; Uncomment for troubleshooting only.
+    ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+
+    ; Return to OneNote from the browser.
+    if WinExist("ahk_exe ONENOTE.EXE")
+    {
+        ; Uncomment next line for troubleshooting only.
+        ; MsgBox, OneNote is open.
+        WinActivate, ahk_exe ONENOTE.EXE
+    }
+    else
+    {
+        MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
+        return
+        }
+
+    ; - Only create office style hyperlink if OneNote is active.
+    ; - because this style of hyperlink is specific to Windows Office products.
+    if WinActive("ahk_exe ONENOTE.EXE")
+    {
+        SendInput (source){left 1}^{LEFT}^+{RIGHT}
+        SendInput ^k ; open link diaglog]
+        SendInput ^v ; paste the hyperlink
+        SendInput {enter} ; complete creation of hyperlink.
+        SendInput {right 2} ; So cursor is in good position for typing.
+    }
+
+    return
+}
+
+/*
     Description: Pastes text only format of clipboard content. Works in OneNote only.
 
     HotKey: ctrl + shift + v
@@ -474,47 +599,6 @@ return
 ^!,::
 MsgBox, "AutoHotkey  test!"
 return
-
-
-/*
-    Description: Display a message box with commonly AutoHotKey macros and their shortcut key combos.
-
-    HotKey: ctrl + alt + esc
-
-    Usage:
-    1. Use shortcute [ctrl + alt + esc] to display the message box.
-
-    Comments:
-    It's easy to forget AutoHotKey shortcuts - and even the macros themselves - so this this
-    message box displays the ones I commonly forget.
-
-    Assumptions:
-    It is not convienient to list all the shortcuts - adding them to the message box is tedious - so,
-    the message box will only display those that are useful, but might not have easy to remember
-    shortcuts.
-
-    History
-    20211102        A   - Initial Version
-*/
-^!ESC::
-{
-    help := []
-    help.push("ctrl + alt + numpad1 : Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.")
-    help.push("ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.")
-    help.push("ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.")
-    help.push("ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.")
-    help.push("ctrl + alt + r : Reload the AutoHotKey script.")
-    helpString := ""
-
-    Loop, % help.MaxIndex()
-    {
-        helpString .= help[A_Index]"`r`n`r`n"
-    }
-
-    MsgBox % helpString
-
-    return
-}
 
 /*
     Description: Reload the AutoHotKey script: C:\Program Files\AutoHotkey\AutoHotkeyU64.ahk.
