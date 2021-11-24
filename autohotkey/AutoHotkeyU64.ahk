@@ -29,6 +29,10 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ; ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.
 ;
 ; ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.
+;
+; ctrl + alt + numpad5 or ctrl + alt + F5 : Create a hyperlink in OneNote from the clipboard.
+;
+; ctrl + alt + numpad6 or ctrl + alt + F6 : Createa a (source) style hyperlink from a YouTube video players "Copy video URL at current time feature."
 
 
 ; ----------------------------------------------------------------------
@@ -87,6 +91,8 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
     help.push("ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.")
     help.push("ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.")
     help.push("ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.")
+    help.push("ctrl + alt + numpad5 or ctrl + alt + F5 : Create a hyperlink in OneNote from the clipboard.")
+    help.push("ctrl + alt + numpad6 or ctrl + alt + F6 : Create a (source) link in OneNote from YouTube with time.")
     help.push("ctrl + alt + r : Reload the AutoHotKey script.")
     helpString := ""
 
@@ -483,10 +489,6 @@ return
         hyperlinks from YouTube's share dialog box, where the option to include "Start
         at [time]" has been checked.
 
-        TODO: What would it take to automate clicking of Share button, checking the
-        start at checkbox and copying the url to clipboard?
-        TODO: Look at chrome.ahk.
-
     Assumptions:
         1. OneNote is open
         2. Cursor is at location where link should be created in OneNote.
@@ -626,5 +628,133 @@ return
     Sleep 1000 ; If successful, the reload will close this instance during the sleep, so the line below will never be reached.
     MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
     IfMsgBox, Yes, Edit
+    return
+}
+
+/*
+    Description: Get URL with "Copy video URL at current time" feature and create a (Source) Style link in OneNote.
+
+    Hotkey: ctrl + alt + Numpad6 or ctrl + alt + F6
+
+    Usage:
+        1. Place cursor in OneNote where link should be created.
+        2. alt + tab or otherwise move to the Chrome tab hosting the YouTube video.
+        3. Use hotkey to active this macro.
+        4. Verify the link has been created as expected.
+
+    Comments:
+
+    Assumptions:
+        1. For use with YouTube only.
+        2. Video must be the active control and page/mouse must be over video.
+           If your mouse is not over the video when you initiate the macro,
+
+        3. In OneNote, cursor is placed where link should be inserted.
+        4. YouTube's "Copy video URL at current time" feature is available and working.
+           To test this feature, right-click on the video and verify the option is available.
+
+    History
+    YYYYMMDD        name        - Comment
+    20211123        aa          - Initial Version.
+
+*/
+
+^!Numpad6::
+^!F6::
+{
+    ; Uncomment next line for debugging only.
+    ;MsgBox, ctrl + alt + F6 Pressed.
+
+    ; Clear the clipboard before attempting to acquire the new URL to prevent the case where
+    ; the copy of the URL to the clipboard failed, but because there was already a URL on the
+    ; clipboard, the URL verification (regex) passed (matched).
+    ; One case where the URL copy can fail is when the Chrome tab where the YouTube video is,
+    ; is active, but the video player itself is not active. In testing, I've found that this
+    ; is especially likely to occur if you've clicked slightly to the left of the video player in
+    ; the white margin that surrounds the YouTube video player. Nothing prevents this macro
+    ; from executing when the white marging (and not the video) is selected. Although there is an
+    ; an attempt to move the mouse to a safe location within the player for standard windows sizes.
+    ; If this macro initiates a Windows Save dialog, you can be pretty sure that, 1. A URL
+    ; was already on the clipboard, 2. that the appropriate Chrome tab was active, but that the
+    ; mouse was likely clicked in the white margin to the left of the video player. Note, clearing
+    ; the clipboard prevents this scenario so, if you want to test this edge case then you'll need
+    ; to temporarily comment out this Clipboard clear command.
+    Clipboard := "" ; Prevent existing clipboard content, especially URLs from affecting this run.
+
+    ; This if-block ensures that the Chrome is the active app.
+    ; This allows this macro to execute successfully whether started in OneNote or Chrome.
+    ; Although my previous workflow was to switch from OneNote to Chrome/YouTube using alt + tab
+    ; this method is faster - I dont' have to type the shortcut - and more consistent - it will work
+    ; regardless of which tab I'm in: OneNote or Chrome/YouTube.
+    if WinExist("ahk_exe chrome.exe")
+    {
+        WinActivate, ahk_exe chrome.exe
+    }
+
+    ; Move the mouse to a safe location within the YouTube player.
+    ; "Safe" refers to a location where there is a very high probability that the "Copy video URL
+    ; at current time" feature will be available (as opposed to a Chrome dialog).
+    ; (x,y) of (125,160) seems to work when chrome/YouTube Player window is the smallest or
+    ; largest size for my screen. Assumes Chrome is top-left corner of right-most monitor.
+    MouseMove, 125, 160, 0
+
+    ; Activate the "Copy video URL at current time" feature of the YouTube video player.
+    Click, Right
+
+    ;x-axis adjustment required to activate list item on the "Copy video URL at current time" menu.
+    ;R so that movement is relative to current mouse position and not top left corner of screen.
+    MouseMove, 10, 100, 0, R
+
+    ; Left-click, i.e., activate "Copy video URL at current time" menu item.
+    Click, Left
+
+    ; Copy clipboard contents back to clipboard as text. Precautionary.
+    Clipboard := Clipboard
+    ; Without this wait, macro may experience intermittent failures.
+    ClipWait 1
+
+    ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+    If RegExMatch(Clipboard, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9]+\?t=[a-zA-z0-9]+$")
+    {
+        ; Return to OneNote from the browser.
+        if WinExist("ahk_exe ONENOTE.EXE")
+        {
+            ; Uncomment next line for troubleshooting only.
+            ; MsgBox, OneNote is open.
+            WinActivate, ahk_exe ONENOTE.EXE
+        }
+        else
+        {
+            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
+            return
+        }
+
+        ; - Only create office style hyperlink if OneNote is active.
+        ; - because this style of hyperlink is specific to Windows Office products.
+        if WinActive("ahk_exe ONENOTE.EXE")
+        {
+            SendInput (source){left 1}^{LEFT}^+{RIGHT}
+            SendInput ^k ; open link diaglog]
+            SendInput ^v ; paste the hyperlink
+            SendInput {enter} ; complete creation of hyperlink.
+            SendInput {right 2} ; So cursor is in good position for typing.
+        }
+    }
+    else
+    {
+        MsgBox,, Error, Contents of clipboard not URL-like. Try again.
+
+        ; In the case the clipboard is empty, which happens when the copy of the URL fails,
+        ; This message box will still appear but because the clipboard is empty, only the start
+        ; of the message will display. Considered putting a dummy value on the clipboard so that
+        ; something standard would appear in this message (to aid in troubleshooting) but it's
+        ; not clear doing so would improve troubleshooting. Could check to see if clipboard is
+        ; empty and prevent an alternate debug message in that case, but that seems overkill.
+        ; Although really only for debugging, this MsgBox is very helpful so, unlike other debug
+        ; messages, don't comment it out.
+        MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+        return
+    }
+
     return
 }
