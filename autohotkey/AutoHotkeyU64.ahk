@@ -185,11 +185,22 @@ return
     History
     20191004        A   - Initial Version
     20211102        A   - Added stacked shortcut (^!F!) for use with 75% keyboard, which has no numpad.
+    20211126        A   - Refactored to eliminate the manual switching between OneNote and Chrome.
 */
 ^!Numpad1::
 ^!F1::
 {
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
+
+    if WinExist("ahk_exe chrome.exe")
+    {
+        WinActivate, ahk_exe chrome.exe
+    }
+    else
+    {
+        MsgBox,, Error, Chrome not running. Aborting.
+        return
+    }
 
     if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's running.
     {
