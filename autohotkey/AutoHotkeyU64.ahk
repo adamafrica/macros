@@ -186,11 +186,14 @@ return
     20191004        A   - Initial Version
     20211102        A   - Added stacked shortcut (^!F!) for use with 75% keyboard, which has no numpad.
     20211126        A   - Refactored to eliminate the manual switching between OneNote and Chrome.
+    20211127        A   - Add valid URL check.
 */
 ^!Numpad1::
 ^!F1::
 {
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
+
+    clipboard := "" ; Empty the clipboard in preparation for copying.
 
     if WinExist("ahk_exe chrome.exe")
     {
@@ -202,10 +205,8 @@ return
         return
     }
 
-    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's running.
+    if WinActive("ahk_exe chrome.exe")
     {
-        clipboard := "" ; Empty the clipboard in preparation for copying.
-
         ; Move focus to the address bar so URL can be copied. alt + d. This is chrome specific.
         SendInput !d
 
@@ -222,40 +223,58 @@ return
             MsgBox,, Error, The attempt to copy text to the clipboard failed.
             return
         }
-
-        clipboard := clipboard ; Copy clipboard contents back to clipboard as text.
-
-        ; Uncomment for troubleshooting only.
-        ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
-
-        ; Return to OneNote from the browser.
-        if WinExist("ahk_exe ONENOTE.EXE")
-        {
-            ; Uncomment next line for troubleshooting only.
-            ; MsgBox, OneNote is open.
-            WinActivate, ahk_exe ONENOTE.EXE
-        }
-        else
-        {
-            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-            return
-         }
-
-        ; - Only create office style hyperlink if OneNote is active.
-        ; - because this style of hyperlink is specific to Windows Office products.
-        if WinActive("ahk_exe ONENOTE.EXE")
-        {
-            SendInput (source){left 1}^{LEFT}^+{RIGHT}
-            SendInput ^k ; open link diaglog]
-            SendInput ^v ; paste the hyperlink
-            SendInput {enter} ; complete creation of hyperlink.
-            SendInput {right 2} ; So cursor is in good position for typing.
-        }
     }
     else
     {
         MsgBox,, Error, Aborting. Chrome needs to be the active window.
     }
+
+    clipboard := clipboard ; Copy clipboard contents back to clipboard as text.
+
+        ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+    If Not RegExMatch(Clipboard, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?$")
+    {
+        MsgBox,, Error, Contents of clipboard not URL-like. Try again.
+
+        ; In the case the clipboard is empty, which happens when the copy of the URL fails,
+        ; This message box will still appear but because the clipboard is empty, only the start
+        ; of the message will display. Considered putting a dummy value on the clipboard so that
+        ; something standard would appear in this message (to aid in troubleshooting) but it's
+        ; not clear doing so would improve troubleshooting. Could check to see if clipboard is
+        ; empty and prevent an alternate debug message in that case, but that seems overkill.
+        ; Although really only for debugging, this MsgBox is very helpful so, unlike other debug
+        ; messages, don't comment it out.
+        MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+        return
+    }
+
+    ; Uncomment for troubleshooting only.
+    ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+
+    ; Return to OneNote from the browser.
+    if WinExist("ahk_exe ONENOTE.EXE")
+    {
+        ; Uncomment next line for troubleshooting only.
+        ; MsgBox, OneNote is open.
+        WinActivate, ahk_exe ONENOTE.EXE
+    }
+    else
+    {
+        MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
+        return
+    }
+
+    ; - Only create office style hyperlink if OneNote is active.
+    ; - because this style of hyperlink is specific to Windows Office products.
+    if WinActive("ahk_exe ONENOTE.EXE")
+    {
+        SendInput (source){left 1}^{LEFT}^+{RIGHT}
+        SendInput ^k ; open link diaglog]
+        SendInput ^v ; paste the hyperlink
+        SendInput {enter} ; complete creation of hyperlink.
+        SendInput {right 2} ; So cursor is in good position for typing.
+    }
+
     return
 }
 
