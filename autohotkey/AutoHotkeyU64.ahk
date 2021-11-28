@@ -822,7 +822,8 @@ CreateOneNoteSourceTag(URL)
     {
         SendInput (source){left 1}^{LEFT}^+{RIGHT}
         SendInput ^k ; open link diaglog]
-        SendInput %URL% ; paste the hyperlink
+        ; Changed from SendInput to SendRaw because SendInput was dropping # characters. -- 20211128 12:32:40:
+        SendRaw %URL% ; paste the hyperlink
         SendInput {enter} ; complete creation of hyperlink.
         SendInput {right 2} ; So cursor is in good position for typing.
     }
