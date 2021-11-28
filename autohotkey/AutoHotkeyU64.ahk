@@ -612,31 +612,6 @@ return
     return
 }
 
-^!Numpad7::
-^!F7::
-{
-    MsgBox,, "Error, ctrl + alt + Numpad7 and ctrl + alt F7 not implemented."
-    ; URL_Candidate := GetURLFromChrome()
-    ; MsgBox,, Debug, URL Candidate: %URL_Candidate%
-    ; CreateOneNoteSourceTag(URL_Candidate)
-
-    ; Test unknown url_type (to trigger default in switch) but good url.
-    ;response := IsURL("Bob", "https://www.autohotkey.com/docs/commands/Switch.htm")
-
-    ; Test unknown url_type (to trigger default in switch) and bad url.
-    ; response := IsURL("Bob", "htt://www.autohotkey.com/docs/commands/Switch.htm")
-
-    ; Test known url_type with bad YouTube url. URL is actually good but not time stamped.
-    ;  response := IsURL("YouTube_TimeStamp", "https://www.youtube.com/watch?v=lG90LZotrpo&t=1299")
-
-    ; Test known url_type with good YouTube url.
-    ;response := IsURL("YouTube_TimeStamp", "https://youtu.be/lG90LZotrpo?t=704")
-
-    ;MsgBox,, Debug, IsURL Response: %response%
-
-    return
-}
-
 GetURLFromChrome()
 {
     ; Uncomment for troubleshooting only.
