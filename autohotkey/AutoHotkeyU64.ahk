@@ -1,4 +1,4 @@
-#NoEnv  ; Avoid check empty variables to see if they are environment variables. Recommended.
+#NoEnv  ; Avoids checking empty variables to see if they are environment variables. Recommended.
 #SingleInstance Force ; Determines whether a script is allowed to run again when it is already running.
 SendMode Input  ; Makes Send synonymous with SendInput or SendPlay. Recommended.
 SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
@@ -715,7 +715,7 @@ return
     ; This allows this macro to execute successfully whether started in OneNote or Chrome.
     ; Although my previous workflow was to switch from OneNote to Chrome/YouTube using alt + tab
     ; this method is faster - I dont' have to type the shortcut - and more consistent - it will work
-    ; regardless of which tab I'm in: OneNote or Chrome/YouTube.
+    ; regardless of which tab I'm in: OneNote or Chrome/YouTube or some other app.
     if WinExist("ahk_exe chrome.exe")
     {
         WinActivate, ahk_exe chrome.exe
@@ -787,4 +787,142 @@ return
     }
 
     return
+}
+
+^!Numpad7::
+^!F7::
+{
+    ; URL_Candidate := GetURLFromChrome()
+    ; MsgBox,, Debug, URL Candidate: %URL_Candidate%
+    ; CreateOneNoteSourceTag(URL_Candidate)
+
+    ; Test unknown url_type (to trigger default in switch) but good url.
+    ;response := IsURL("Bob", "https://www.autohotkey.com/docs/commands/Switch.htm")
+
+    ; Test unknown url_type (to trigger default in switch) and bad url.
+    ; response := IsURL("Bob", "htt://www.autohotkey.com/docs/commands/Switch.htm")
+
+    ; Test known url_type with bad YouTube url. URL is actually good but not time stamped.
+    ;  response := IsURL("YouTube_TimeStamp", "https://www.youtube.com/watch?v=lG90LZotrpo&t=1299")
+
+    ; Test known url_type with good YouTube url.
+    ;response := IsURL("YouTube_TimeStamp", "https://youtu.be/lG90LZotrpo?t=704")
+
+    MsgBox,, Debug, IsURL Response: %response%
+
+    return
+}
+
+GetURLFromChrome()
+{
+    ; Uncomment for troubleshooting only.
+    ; MsgBox,, Debug, Started GetURLFromChrome Function
+
+    Clipboard := "" ; Empty the clipboard in preparation for copying.
+
+    if WinExist("ahk_exe chrome.exe")
+    {
+        WinActivate, ahk_exe chrome.exe
+    }
+    else
+    {
+        MsgBox,, Error, Aborting. Chrome not running.
+        return
+    }
+
+        if WinActive("ahk_exe chrome.exe")
+    {
+        ; Move focus to the address bar so URL can be copied. alt + d. This is chrome specific.
+        SendInput !d
+
+        ; give time for omnibox (URL) to be selected
+        sleep, 100
+
+        ; Copy the URL to clipboard
+        SendInput ^c
+
+        ; Wait for 2 seconds for the clipboard to contain text. Exit script if no text found.
+        ClipWait 2
+        if ErrorLevel
+        {
+            MsgBox,, Error, Aborting. The attempt to copy text to the clipboard failed.
+            return
+        }
+    }
+    else
+    {
+        MsgBox,, Error, Aborting. Chrome needs to be the active window.
+        return
+    }
+
+    Clipboard := Clipboard ; Copy clipboard contents back to clipboard as text.
+
+    return Clipboard
+}
+
+CreateOneNoteSourceTag(URL)
+{
+    ; Uncomment for troubleshooting only.
+    ;MsgBox,, Debug, Started CreateOneNoteSourceTag Function
+
+        ; Return to OneNote from the browser.
+    if WinExist("ahk_exe ONENOTE.EXE")
+    {
+        ; Uncomment next line for troubleshooting only.
+        ; MsgBox, OneNote is open.
+        WinActivate, ahk_exe ONENOTE.EXE
+    }
+    else
+    {
+        MsgBox,, Error, Aborting. OneNote does not appear to be open. Open it and try again.
+        return
+    }
+
+    ; - Only create office style hyperlink if OneNote is active.
+    ; - because this style of hyperlink is specific to Windows Office products.
+    if WinActive("ahk_exe ONENOTE.EXE")
+    {
+        SendInput (source){left 1}^{LEFT}^+{RIGHT}
+        SendInput ^k ; open link diaglog]
+        SendInput ^v ; paste the hyperlink
+        SendInput {enter} ; complete creation of hyperlink.
+        SendInput {right 2} ; So cursor is in good position for typing.
+    }
+
+    return
+}
+
+IsURL(URL_Type, URL_Candidate)
+{
+    ; Assume URL Canditate is not valid until validation proves otherwise.
+    is_match := False
+
+    ; Uncomment next three lines for troubleshooting only.
+    MsgBox,, Debug, ValidatURL function started.
+    MsgBox,, Debug, URL_Type: %URL_Type%
+    MsgBox,, Debug, URL_Candidate: %URL_Candidate%
+
+    ; The return value for the RegExMatch function is the position of the leftmost occurence
+    ; or if no match is found, zero is returned. In AutoHotKey True is non-zero and False is 0.
+    Switch URL_Type
+    {
+        Case "YouTube_TimeStamp":
+            ; Uncomment next line for troubelshooting only.
+            MsgBox,, Debug, Evaluating YouTube URL with TimeStamp.
+
+            If RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9]+\?t=[a-zA-z0-9]+$")
+            {
+                is_match := True
+            }
+        Default:
+            ; Uncomment next line for troubleshooting only.
+            MsgBox,, Debug, Evaluating Defualt URL Style.
+
+            if RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}(\/\S*)?$")
+            {
+                is_match := True
+            }
+    }
+
+    return is_match
 }
