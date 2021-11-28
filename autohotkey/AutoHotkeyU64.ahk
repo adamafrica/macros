@@ -202,6 +202,9 @@ return
 
     URL_Candidate := GetURLFromChrome()
 
+    ; Uncomment following line for debug only.
+    MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
+
     ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
     If IsURL("Regular", URL_Candidate)
     {
@@ -217,7 +220,7 @@ return
 }
 
 /*
-    Description: Create a hyperlink in OneNote from the URI in the Chrome Omnibox.
+    Description: Create a raw hyperlink in OneNote from the URI in the Chrome Omnibox.
 
     HotKey: ctrl + alt + numpad4
 
@@ -230,7 +233,7 @@ return
     Comments:
     Created this macro to help speed up the process of annotating references in OneNote references sections.
     This macro is a simplified version: "Create a (source) tag - a hyperlink where display text is (source) in
-    OneNote from a URL in Chrome."
+    OneNote from a URL in Chrome.".
 
     Assumptions:
 
@@ -243,52 +246,32 @@ return
 {
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
 
-    if WinActive("ahk_exe chrome.exe") ; Chrome is driver for this so just exit if it's not running.
+    URL_Candidate := GetURLFromChrome()
+
+    if IsURL("Regular", URL_Candidate)
     {
-        ; Move focus to the address bar so URL can be copied. alt + d. This is chrome specific.
-        SendInput !d
-        ; give time for omnibox (URL) to be selected
-        sleep, 100
-
-        ; Copy the URL to clipboard
-        SendInput ^c
-
-        ; Wait for 2 seconds for the clipboard to contain text. Exit script if no text found.
-        clipboard := "" ; Empty the clipboard in preparation for copying. A must have step in order for copy to work consistently.
-        ClipWait 2
-        if ErrorLevel
-        {
-            MsgBox,, Error, The attempt to copy text to the clipboard failed.
-            return
-        }
-
-        clipboard := clipboard ; Copy clipboard contents back to clipboard as text.
-
-        ; Uncomment for troubleshooting only.
-        ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
-
         ; Return to OneNote from the browser.
         if WinExist("ahk_exe ONENOTE.EXE")
         {
-            ; MsgBox, OneNote is open. ; Uncomment next line for troubleshooting only.
+            ; MsgBox, OneNote is open. ; Uncomment for troubleshooting only.
             WinActivate, ahk_exe ONENOTE.EXE
         }
         else
         {
             MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
             return
-         }
-        ; - Only create office style hyperlink if OneNote is active.
-        ; - because this style of hyperlink is specific to Windows Office products.
+        }
+
         if WinActive("ahk_exe ONENOTE.EXE")
         {
-            SendInput ^v ; paste the hyperlink
+            SendRaw %URL_Candidate% ; paste the hyperlink
+        }
+        else
+        {
+            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
         }
     }
-    else
-    {
-        MsgBox,, Error, Aborting. Chrome needs to be the active window.
-    }
+
     return
 }
 
@@ -730,6 +713,7 @@ return
 ^!Numpad7::
 ^!F7::
 {
+    MsgBox,, "Error, ctrl + alt + Numpad7 and ctrl + alt F7 not implemented."
     ; URL_Candidate := GetURLFromChrome()
     ; MsgBox,, Debug, URL Candidate: %URL_Candidate%
     ; CreateOneNoteSourceTag(URL_Candidate)
@@ -746,7 +730,7 @@ return
     ; Test known url_type with good YouTube url.
     ;response := IsURL("YouTube_TimeStamp", "https://youtu.be/lG90LZotrpo?t=704")
 
-    MsgBox,, Debug, IsURL Response: %response%
+    ;MsgBox,, Debug, IsURL Response: %response%
 
     return
 }
@@ -754,7 +738,7 @@ return
 GetURLFromChrome()
 {
     ; Uncomment for troubleshooting only.
-    ; MsgBox,, Debug, Started GetURLFromChrome Function
+    ;MsgBox,, Debug, Started GetURLFromChrome Function
 
     Clipboard := "" ; Empty the clipboard in preparation for copying.
 
