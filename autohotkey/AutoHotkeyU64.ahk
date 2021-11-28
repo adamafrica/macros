@@ -556,32 +556,19 @@ return
     ; Uncomment next line for debugging only.
     ;MsgBox, ctrl + alt + F6 Pressed.
 
-    ; Clear the clipboard before attempting to acquire the new URL to prevent the case where
-    ; the copy of the URL to the clipboard failed, but because there was already a URL on the
-    ; clipboard, the URL verification (regex) passed (matched).
-    ; One case where the URL copy can fail is when the Chrome tab where the YouTube video is,
-    ; is active, but the video player itself is not active. In testing, I've found that this
-    ; is especially likely to occur if you've clicked slightly to the left of the video player in
-    ; the white margin that surrounds the YouTube video player. Nothing prevents this macro
-    ; from executing when the white marging (and not the video) is selected. Although there is an
-    ; an attempt to move the mouse to a safe location within the player for standard windows sizes.
-    ; If this macro initiates a Windows Save dialog, you can be pretty sure that, 1. A URL
-    ; was already on the clipboard, 2. that the appropriate Chrome tab was active, but that the
-    ; mouse was likely clicked in the white margin to the left of the video player. Note, clearing
-    ; the clipboard prevents this scenario so, if you want to test this edge case then you'll need
-    ; to temporarily comment out this Clipboard clear command.
-    Clipboard := "" ; Prevent existing clipboard content, especially URLs from affecting this run.
+    Clipboard := "" ; Empty the clipboard in preparation for copying.
 
-    ; This if-block ensures that the Chrome is the active app.
-    ; This allows this macro to execute successfully whether started in OneNote or Chrome.
-    ; Although my previous workflow was to switch from OneNote to Chrome/YouTube using alt + tab
-    ; this method is faster - I dont' have to type the shortcut - and more consistent - it will work
-    ; regardless of which tab I'm in: OneNote or Chrome/YouTube or some other app.
     if WinExist("ahk_exe chrome.exe")
     {
         WinActivate, ahk_exe chrome.exe
     }
 
+    if NOT WinActive("ahk_exe chrome.exe")
+    {
+        MsgBox,, Error, Aborting. chrome.exe is not active.
+    }
+
+    ; It is assumed that a Chrome tab with a YouTube Video Player is open.
     ; Move the mouse to a safe location within the YouTube player.
     ; "Safe" refers to a location where there is a very high probability that the "Copy video URL
     ; at current time" feature will be available (as opposed to a Chrome dialog).
@@ -604,46 +591,21 @@ return
     ; Without this wait, macro may experience intermittent failures.
     ClipWait 1
 
-    ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
-    If RegExMatch(Clipboard, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9]+\?t=[a-zA-z0-9]+$")
-    {
-        ; Return to OneNote from the browser.
-        if WinExist("ahk_exe ONENOTE.EXE")
-        {
-            ; Uncomment next line for troubleshooting only.
-            ; MsgBox, OneNote is open.
-            WinActivate, ahk_exe ONENOTE.EXE
-        }
-        else
-        {
-            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-            return
-        }
+    URL_Candidate := Clipboard
+    ClipWait 1
 
-        ; - Only create office style hyperlink if OneNote is active.
-        ; - because this style of hyperlink is specific to Windows Office products.
-        if WinActive("ahk_exe ONENOTE.EXE")
-        {
-            SendInput (source){left 1}^{LEFT}^+{RIGHT}
-            SendInput ^k ; open link diaglog]
-            SendInput ^v ; paste the hyperlink
-            SendInput {enter} ; complete creation of hyperlink.
-            SendInput {right 2} ; So cursor is in good position for typing.
-        }
+    ; Uncomment next line for debugging only.
+    ; MsgBox,, Debug, URL_Candidate is: %URL_Candidate%
+
+    ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+    If IsURL("YouTube_TimeStamp", URL_Candidate)
+    {
+        CreateOneNoteSourceTag(URL_Candidate)
     }
     else
     {
-        MsgBox,, Error, Contents of clipboard not URL-like. Try again.
-
-        ; In the case the clipboard is empty, which happens when the copy of the URL fails,
-        ; This message box will still appear but because the clipboard is empty, only the start
-        ; of the message will display. Considered putting a dummy value on the clipboard so that
-        ; something standard would appear in this message (to aid in troubleshooting) but it's
-        ; not clear doing so would improve troubleshooting. Could check to see if clipboard is
-        ; empty and prevent an alternate debug message in that case, but that seems overkill.
-        ; Although really only for debugging, this MsgBox is very helpful so, unlike other debug
-        ; messages, don't comment it out.
-        MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+        MsgBox,, Error, URL Candidate not URL-like. Try again.
+        MsgBox,, Debug, URL Candidate:`n`n%URL_Candidate%
         return
     }
 
