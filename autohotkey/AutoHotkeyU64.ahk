@@ -428,66 +428,6 @@ return
 }
 
 /*
-    Description: Create a (source) style hyperlink in OneNote from the clipboard.
-
-    Hotkey: ctrl + alt + numpad5 or ctrl + alt + F5
-
-    Usage:
-        1.
-
-    Comments:
-        Developed this macro to speed the process of creating OneNote (source) style
-        hyperlinks from YouTube's share dialog box, where the option to include "Start
-        at [time]" has been checked.
-
-    Assumptions:
-        1. OneNote is open
-        2. Cursor is at location where link should be created in OneNote.
-        3. There is a valid URL on the Windows clipboard.
-
-    History
-    YYYYMMDD        name        - Comment
-    20211122        a           - Initial Version.
-*/
-^!Numpad5::
-^!F5::
-{
-    ; Uncomment next line for debugging only.
-    ;MsgBox, F5 Pressed.
-
-    clipboard := clipboard ; Copy clipboard contents back to clipboard as text. Precautionary.
-
-    ; Uncomment for troubleshooting only.
-    ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
-
-    ; Return to OneNote from the browser.
-    if WinExist("ahk_exe ONENOTE.EXE")
-    {
-        ; Uncomment next line for troubleshooting only.
-        ; MsgBox, OneNote is open.
-        WinActivate, ahk_exe ONENOTE.EXE
-    }
-    else
-    {
-        MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-        return
-        }
-
-    ; - Only create office style hyperlink if OneNote is active.
-    ; - because this style of hyperlink is specific to Windows Office products.
-    if WinActive("ahk_exe ONENOTE.EXE")
-    {
-        SendInput (source){left 1}^{LEFT}^+{RIGHT}
-        SendInput ^k ; open link diaglog]
-        SendInput ^v ; paste the hyperlink
-        SendInput {enter} ; complete creation of hyperlink.
-        SendInput {right 2} ; So cursor is in good position for typing.
-    }
-
-    return
-}
-
-/*
     Description: Pastes text only format of clipboard content. Works in OneNote only.
 
     HotKey: ctrl + shift + v
