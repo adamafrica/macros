@@ -112,6 +112,7 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ::ahk::AutoHotKey ; Love AutoHotKey, hate typing it!
 
 
+
 ; ----------------------------------------------------------------------
 ; Command Window Helpers
 ; ----------------------------------------------------------------------
@@ -124,7 +125,8 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ;   Windows Command console, PowerShell included.
 ;
 ; Prevent shortcut from firing unless a Command console or PowerShell console is active.
-#If WinActive("ahk_class ConsoleWindowClass")
+if WinActive("ahk_exe pwsh.exe")
+{
     ^w::
     WinGetTitle sTitle
     If (InStr(sTitle, "-")=0) {
@@ -133,7 +135,7 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
             SendInput ^w
     }
     return
-#If
+}
 
 ; ----------------------------------------------------------------------
 ; Jira helpers
@@ -166,11 +168,12 @@ return
 ;   You don't need this script to create a 1x1 table in OneNote, you can also
 ;   use alt + n + t to create a table instead.
 ;   alt accesses the OneNote menu bar, n accesses the insert menu. t prepares a table for insert and {enter} inserts a 1x1 table.
-#If WinActive("ahk_exe ONENOTE.EXE")
+if WinActive("ahk_exe ONENOTE.EXE")
+{
     ^!t::
     SendInput !nt{enter}
     return
-#If
+}
 
 /*
     Description: Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.
@@ -735,4 +738,9 @@ IsURL(URL_Type, URL_Candidate)
     }
 
     return is_match
+}
+
+^!#t:: ;ctrl + alt + win + t
+{
+    MsgBox,, Debug, This a test.
 }
