@@ -86,6 +86,8 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ^!ESC::
 {
     help := []
+    help.push("Anki Version: " A_AhkVersion)
+    help.push("Operating System Version: " A_OSVersion)
     help.push("ctrl + alt + numpad1 : Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.")
     help.push("ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.")
     help.push("ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.")
@@ -108,7 +110,6 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 
 ; Hotstrings
 ::ahk::AutoHotKey ; Love AutoHotKey, hate typing it!
-
 
 
 ; ----------------------------------------------------------------------
@@ -447,12 +448,12 @@ return
     History
     20200518        A   - Initial Version
 */
-#IfWinActive ahk_exe ONENOTE.EXE
-^+v::
-SendInput !hvt
-Return
-#IfWinActive
-
+if WinActive("ahk_exe ONENOTE.EXE")
+{
+    ^+v::
+    SendInput !hvt
+    Return
+}
 ; ---------------------------------------------------------------------
 ; - SQL helpers
 ; ---------------------------------------------------------------------
