@@ -267,7 +267,8 @@ if WinActive("ahk_exe ONENOTE.EXE")
 
         if WinActive("ahk_exe ONENOTE.EXE")
         {
-            SendRaw %URL_Candidate% ; paste the hyperlink
+            ; {Raw} is required so that special characters and non-ascii characters not dropped.
+            Send {Raw} %URL_Candidate%
         }
         else
         {
@@ -686,8 +687,8 @@ CreateOneNoteSourceTag(URL)
     {
         SendInput (source){left 1}^{LEFT}^+{RIGHT}
         SendInput ^k ; open link diaglog]
-        ; Changed from SendInput to SendRaw because SendInput was dropping # characters. -- 20211128 12:32:40:
-        SendRaw %URL% ; paste the hyperlink
+        ; {Raw} is required so that special characters and non-ascii characters not dropped.
+        Send {Raw} %URL% ; paste the hyperlink
         SendInput {enter} ; complete creation of hyperlink.
         SendInput {right 2} ; So cursor is in good position for typing.
     }
