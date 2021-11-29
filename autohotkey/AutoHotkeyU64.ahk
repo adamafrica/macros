@@ -1,4 +1,3 @@
-#NoEnv  ; Avoids checking empty variables to see if they are environment variables. Recommended.
 #SingleInstance Force ; Determines whether a script is allowed to run again when it is already running.
 SendMode Input  ; Makes Send synonymous with SendInput or SendPlay. Recommended.
 SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
@@ -629,7 +628,7 @@ GetURLFromChrome()
         return
     }
 
-        if WinActive("ahk_exe chrome.exe")
+    if WinActive("ahk_exe chrome.exe")
     {
         ; Move focus to the address bar so URL can be copied. alt + d. This is chrome specific.
         SendInput !d
