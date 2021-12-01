@@ -110,6 +110,7 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 
 ; Hotstrings
 ::ahk::AutoHotKey ; Love AutoHotKey, hate typing it!
+::sha-1::SHA-1 ; love sha-1 (even if it's weak), but hate typing it.
 
 
 
@@ -206,7 +207,7 @@ if WinActive("ahk_exe ONENOTE.EXE")
     URL_Candidate := GetURLFromChrome()
 
     ; Uncomment following line for debug only.
-    MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
+    ;MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
 
     ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
     If IsURL("Regular", URL_Candidate)
@@ -268,7 +269,7 @@ if WinActive("ahk_exe ONENOTE.EXE")
         if WinActive("ahk_exe ONENOTE.EXE")
         {
             ; {Raw} is required so that special characters and non-ascii characters not dropped.
-            Send {Raw} %URL_Candidate%
+            Send {Raw}%URL_Candidate%
         }
         else
         {
@@ -688,7 +689,7 @@ CreateOneNoteSourceTag(URL)
         SendInput (source){left 1}^{LEFT}^+{RIGHT}
         SendInput ^k ; open link diaglog]
         ; {Raw} is required so that special characters and non-ascii characters not dropped.
-        Send {Raw} %URL% ; paste the hyperlink
+        Send {Raw}%URL% ; paste the hyperlink
         SendInput {enter} ; complete creation of hyperlink.
         SendInput {right 2} ; So cursor is in good position for typing.
     }
@@ -743,5 +744,5 @@ IsURL(URL_Type, URL_Candidate)
 
 ^!#t:: ;ctrl + alt + win + t
 {
-    MsgBox,, Debug, This a test.
+    MsgBox,, Debug, This is a test.
 }
