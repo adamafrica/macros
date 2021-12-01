@@ -109,9 +109,27 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 
 
 ; Hotstrings
-::ahk::AutoHotKey ; Love AutoHotKey, hate typing it!
-::sha-1::SHA-1 ; love sha-1 (even if it's weak), but hate typing it.
+::ahk::
+{
+    if WinActive("ahk_exe chrome.exe")
+    {
+        ; Chrome Omnibox auto-complete may result in the first letter (a)
+        ; being duplicated. Before sending the text, force a backspace
+        ; to clear the first letter so it doesn't get duplicated.
+        ; If you just use a hostring, aAutoHotKey will appear in the
+        ; Omnibox. Add a space after so double-spacing isn't required
+        ; when spacebar is used to initiate auto-completion.
+         SendInput {BS}AutoHotKey{SPACE}
+    }
+    else
+    {
+        SendInput AutoHotKey{SPACE}
+    }
+    return
+}
 
+::sha-1::SHA-1 ; love sha-1 (even if it's weak), but hate typing it.
+return
 
 
 ; ----------------------------------------------------------------------
