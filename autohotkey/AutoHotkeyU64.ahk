@@ -1,7 +1,7 @@
 #SingleInstance Force ; Determines whether a script is allowed to run again when it is already running.
 SendMode Input  ; Makes Send synonymous with SendInput or SendPlay. Recommended.
 SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
-; #Warn  ; Enable/Disable warnings for specific conditions which may indicate an error. Recommended.
+#Warn  ; Enable/Disable warnings for specific conditions which may indicate an error. Recommended.
 
 
 ; ----------------------------------------------------------------------
@@ -119,17 +119,16 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
         ; If you just use a hostring, aAutoHotKey will appear in the
         ; Omnibox. Add a space after so double-spacing isn't required
         ; when spacebar is used to initiate auto-completion.
-         SendInput {BS}AutoHotKey{SPACE}
+         SendInput {BS}AutoHotkey{SPACE}
     }
     else
     {
-        SendInput AutoHotKey{SPACE}
+        SendInput AutoHotkey{SPACE}
     }
     return
 }
 
 ::sha-1::SHA-1 ; love sha-1 (even if it's weak), but hate typing it.
-return
 
 
 ; ----------------------------------------------------------------------
@@ -141,18 +140,26 @@ return
 ; - Example output: N/A
 ; - Comments:
 ; - This shortcut replicates the default Windows behavior of ctrl + w for the
-;   Windows Command console, PowerShell included.
+;   Windows Command console, PowerShell included, while preserving the native
+;   ctrl + w functionality of Chrome, VS Code, etc.
 ;
-; Prevent shortcut from firing unless a Command console or PowerShell console is active.
-if WinActive("ahk_exe pwsh.exe")
+
+$^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loop from occuring in the pass-through case (else-block).
 {
-    ^w::
-    WinGetTitle sTitle
-    If (InStr(sTitle, "-")=0) {
-            SendInput EXIT{Enter}
-    } else {
+    if WinActive("ahk_exe cmd.exe") or WinActive("ahk_exe pwsh.exe") or WinActive("ahk_exe powershell.exe")
+    {
+        ; Alternatively you could send alt + space > c  to close these types of console windows.
+        ; ControlSend exit{ENTER} ; <-- This requires another argument to work, which seems to make this method unworkable, at the moment.
+        SendInput exit{ENTER}
+    }
+    else
+    {
+        ; Pass-Through Case.
+        ; This case is required so that ctrl+w shortcut will perform as-expected in apps that natively support it, e.g., Google's Chrome
+        ; browser, where ctrl+w closes the currently active tab or in VS Code where it closes the active editor tab.
             SendInput ^w
     }
+
     return
 }
 
@@ -634,6 +641,10 @@ return
 
     return
 }
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Function Only - Below this Line ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 GetURLFromChrome()
 {
