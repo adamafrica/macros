@@ -1,4 +1,4 @@
-#SingleInstance Force ; Determines whether a script is allowed to run again when it is already running.
+#SingleInstance Force  ; Determines whether a script is allowed to run again when it is already running.
 SendMode Input  ; Makes Send synonymous with SendInput or SendPlay. Recommended.
 SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 #Warn  ; Enable/Disable warnings for specific conditions which may indicate an error. Recommended.
@@ -170,17 +170,13 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
 ; - Useful for adding unformated text to Jira tickets.
 ; - HotKey: Windows Logo Key + [
 ; - Comments: N/A
-#[::
-SendInput {{}noformat{}}\r\n{{}noformat{}}{left 11}
-return
+#[:: SendInput {{}noformat{}}\r\n{{}noformat{}}{left 11}
 
 ; - Write an Atlassian SQL block
 ; - Useful for adding SQL code blocks to Jira tickets.
 ; - HotKey: Windows Logo Key + ]
 ; - Comments: N/A
-#]::
-SendInput {{}code:language=sql|title=Title{}}\r\n{{}code{}}{left 7}
-return
+#]:: SendInput {{}code:language=sql|title=Title{}}\r\n{{}code{}}{left 7}
 
 ; ---------------------------------------------------------------------
 ; - OneNote Helpers
@@ -642,9 +638,9 @@ return
     return
 }
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; Function Only - Below this Line ;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;
+; Functions  ;
+;;;;;;;;;;;;;
 
 GetURLFromChrome()
 {
@@ -749,7 +745,11 @@ IsURL(URL_Type, URL_Candidate)
                 is_match := True
             }
 
-        Case "Regular": ; Currently this case and Default are same.
+        ; Currently this case and Default are same.
+        ; This case is included because it was faster to write, at the time, than
+        ; figuring out the feasability/implementation of optional parameters
+        ; in AutoHotkey. A refactor is recommended when the cost is justified.
+        Case "Regular":
             ; Uncomment next line for troubelshooting only.
             ;MsgBox,, Debug, Evaluating Regular URL Style.
 
@@ -771,7 +771,36 @@ IsURL(URL_Type, URL_Candidate)
     return is_match
 }
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Development and Testing  ;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+/*
+    This section is for the development and testing of macros.
+    This section not appropriate for a production environment, but
+    makes it easier, faster, more efficient to find and work on
+    new or misbehaving code when you can just go to the bottom.
+    Also, have a few hotkeys with message boxes stubbed out can
+    save a lot of time when developing, debugging, and testing code.
+*/
+
+; This Hotkey for testing purposes only.
+; With one exception, the body of this Hotkey may be modified however you see fit.
+; First line in body, i.e., "MsgBox,, Debug, This is a test." should be left as-is.
+; The first line is useful for distinguishing the purpose of this hotkey.
 ^!#t:: ;ctrl + alt + win + t
 {
+
     MsgBox,, Debug, This is a test.
+    ; WinGetTitle, Title, A
+    ; MsgBox,, Debug, Windows Title: %Title%
+    ; MsgBox,, Debug, Title Match Mode: %A_TitleMatchMode%
+    ; MsgBox,, Debug, Title Match Mode Speed: %A_TitleMatchModeSpeed%
+
+    return
 }
+
+; Example of a context-sensitive AutoHotkey.
+; #If WinActive("ahk_exe ONENOTE.EXE")
+;     ^!#\:: MsgBox,, Debug, "OneNote is active, under context-sensitive hotkey."
+; #If
