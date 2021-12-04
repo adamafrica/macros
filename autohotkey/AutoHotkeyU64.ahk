@@ -170,13 +170,21 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
 ; - Useful for adding unformated text to Jira tickets.
 ; - HotKey: Windows Logo Key + [
 ; - Comments: N/A
-#[:: SendInput {{}noformat{}}\r\n{{}noformat{}}{left 11}
+#[::
+{
+    SendInput {{}noformat{}}{ENTER 2}{{}noformat{}}{Left 10}{Up 1}
+    return
+}
 
 ; - Write an Atlassian SQL block
 ; - Useful for adding SQL code blocks to Jira tickets.
 ; - HotKey: Windows Logo Key + ]
 ; - Comments: N/A
-#]:: SendInput {{}code:language=sql|title=Title{}}\r\n{{}code{}}{left 7}
+#]::
+{
+    SendInput {{}code:language=sql|title=Title{}}{ENTER 2}{{}code{}}{left 7}
+    return
+}
 
 ; ---------------------------------------------------------------------
 ; - OneNote Helpers
@@ -474,12 +482,15 @@ if WinActive("ahk_exe ONENOTE.EXE")
     History
     20200518        A   - Initial Version
 */
-if WinActive("ahk_exe ONENOTE.EXE")
+#If WinActive("ahk_exe ONENOTE.EXE")
 {
     ^+v::
     SendInput !hvt
+
     Return
 }
+#If
+
 ; ---------------------------------------------------------------------
 ; - SQL helpers
 ; ---------------------------------------------------------------------
