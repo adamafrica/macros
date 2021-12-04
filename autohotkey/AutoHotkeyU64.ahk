@@ -227,30 +227,38 @@ if WinActive("ahk_exe ONENOTE.EXE")
     20211126        A   - Refactored to eliminate the manual switching between OneNote and Chrome.
     20211127        A   - Add valid URL check.
     20211128        A   - Refactor to make use of functions, reduce code duplication.
+    20211204        A   - Refactored macro to make it context-sensitive to OneNote.
 */
-^!Numpad1::
-^!F1::
+; Both OneNote AND Chrome must be open AND OneNote OR Chrome must be active otherwise you can get
+; a condition where the active app is something other than OneNote OR Chrome and yet this shortcut
+; is allowed to fire, which is an undesirable condition.
+#If (WinExist("ahk_exe ONENOTE.EXE") AND WinExist("ahk_exe chrome.exe")) AND (WinActive("ahk_exe ONENOTE.EXE") OR WinActive("ahk_exe chrome.exe"))
 {
-    ; MsgBox,, Debug, Started macro ; Uncomment for troubleshooting only.
-
-    URL_Candidate := GetURLFromChrome()
-
-    ; Uncomment following line for debug only.
-    ;MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
-
-    ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
-    If IsURL("Regular", URL_Candidate)
+    ^!Numpad1::
+    ^!F1::
     {
-        CreateOneNoteSourceTag(URL_Candidate)
-    }
-    else
-    {
-        MsgBox,, Error, URL Candidate not URL-like. Try again.
-        MsgBox,, Debug, GetURLFromChrome capture the following URL Candidate:`n`n%URL_Candidate%
+        ; MsgBox,, Debug, Started macro ; Uncomment for troubleshooting only.
+
+        URL_Candidate := GetURLFromChrome()
+
+        ; Uncomment following line for debug only.
+        ;MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
+
+        ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+        If IsURL("Regular", URL_Candidate)
+        {
+            CreateOneNoteSourceTag(URL_Candidate)
+        }
+        else
+        {
+            MsgBox,, Error, URL Candidate not URL-like. Try again.
+            MsgBox,, Debug, GetURLFromChrome capture the following URL Candidate:`n`n%URL_Candidate%
+            return
+        }
         return
     }
-    return
 }
+#If
 
 /*
     Description: Create a raw hyperlink in OneNote from the URI in the Chrome Omnibox.
