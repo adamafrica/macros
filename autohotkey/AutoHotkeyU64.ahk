@@ -337,47 +337,53 @@ if WinActive("ahk_exe ONENOTE.EXE")
 
     History
     20191106        A   - Initial Version
-    20211102        A   - Added stacked shortcut (^!F!) for use with 75% keyboard, which has no numpad.
+    20211102        A   - Added stacked shortcut (^!F2) for use with 75% keyboard, which has no numpad.
+    20211205        A   - Adjusted timings 100 ms --> 500 ms because find and copy frequently failing.
+    20211205        A   - Added context-senstivity to prevent shortcut firing outside OneNote.
 */
-^!Numpad2::
-^!F2::
+#If WinActive("ahk_exe ONENOTE.EXE")
 {
-
-    if WinActive("ahk_exe ONENOTE.EXE") ; Only run this script if OneNote is the active program.
+    ^!Numpad2::
+    ^!F2::
     {
-        ; Set focus to the global search dialog. (like ctrl+f but searches all notebooks.)
-        SendInput ^e
 
-        ; add search text to search dialog.
-        SendInput Template - Footnote Table
+        if WinActive("ahk_exe ONENOTE.EXE") ; Only run this script if OneNote is the active program.
+        {
+            ; Set focus to the global search dialog. (like ctrl+f but searches all notebooks.)
+            SendInput ^e
 
-        ; give time for text to be entered into the search dialog.
-        sleep, 100
+            ; add search text to search dialog.
+            SendInput Template - Footnote Table
 
-        ; Send enter key to execute the search.
-        SendInput {enter}
+            ; give time for text to be entered into the search dialog.
+            sleep, 500
 
-        ; Give time for the search to complete.
-        sleep, 100
+            ; Send enter key to execute the search.
+            SendInput {enter}
 
-        ; Send copy command, i.e., ctrl+a twice so that references table is copied to the clipboard.
-        SendInput ^{a 2}
+            ; Give time for the search to complete.
+            sleep, 500
 
-        ; Copy the references table.
-        SendInput ^c
+            ; Send copy command, i.e., ctrl+a twice so that references table is copied to the clipboard.
+            SendInput ^{a 2}
 
-        ; send alt + backarrow to navigate from the sending page.
-        SendInput !{left}
+            ; Copy the references table.
+            SendInput ^c
 
-        ; paste the reference table.
-        SendInput ^v
+            ; send alt + backarrow to navigate from the sending page.
+            SendInput !{left}
+
+            ; paste the reference table.
+            SendInput ^v
+        }
+        else
+        {
+            MsgBox,, Error, Aborting. Could not add refences table.
+        }
+        return
     }
-    else
-    {
-        MsgBox,, Error, Aborting. Could not add refences table.
-    }
-    return
 }
+#If
 
 /*
     Description: Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.
