@@ -409,13 +409,13 @@ if WinActive("ahk_exe ONENOTE.EXE")
     History
     20191112        A   - Initial Version
     20211102        A   - Added stacked shortcut (^!F!) for use with 75% keyboard, which has no numpad.
+    20211205        A   - Add context-sensitivity so macro only files in OneNote as intended.
 */
-^!Numpad3::
-^!F3::
+#If WinActive("ahk_exe ONENOTE.EXE")
 {
-    if WinActive("ahk_exe ONENOTE.EXE") ; Only format code snippet in OneNote.
+    ^!Numpad3::
+    ^!F3::
     {
-
         ; These variables can be changed if a different code snippet appearance is desired.
         newFontFamily = Courier New ; Font Family to use to format snippet.
         newFontSize = 10  ; Font size to use to format snippet.
@@ -467,13 +467,11 @@ if WinActive("ahk_exe ONENOTE.EXE")
 
         ; Send enter so the change to font size is made.
         SendInput {Enter}
+
+        return
     }
-    else
-    {
-        MsgBox,, Error, Aborting. This AutoHotkey macro only works in OneNote.
-    }
-    return
 }
+#If
 
 /*
     Description: Pastes text only format of clipboard content. Works in OneNote only.
