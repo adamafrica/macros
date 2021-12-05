@@ -198,12 +198,13 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
 ;   You don't need this script to create a 1x1 table in OneNote, you can also
 ;   use alt + n + t to create a table instead.
 ;   alt accesses the OneNote menu bar, n accesses the insert menu. t prepares a table for insert and {enter} inserts a 1x1 table.
-if WinActive("ahk_exe ONENOTE.EXE")
+#If WinActive("ahk_exe ONENOTE.EXE")
 {
     ^!t::
     SendInput !nt{enter}
     return
 }
+#If
 
 /*
     Description: Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.
