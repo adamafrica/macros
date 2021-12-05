@@ -660,67 +660,71 @@ return
     20211123        aa          - Initial Version.
 
 */
-^!Numpad6::
-^!F6::
+#If (WinExist("ahk_exe ONENOTE.EXE") AND WinExist("ahk_exe chrome.exe")) AND (WinActive("ahk_exe ONENOTE.EXE") OR WinActive("ahk_exe chrome.exe"))
 {
-    ; Uncomment next line for debugging only.
-    ;MsgBox, ctrl + alt + F6 Pressed.
-
-    Clipboard := "" ; Empty the clipboard in preparation for copying.
-
-    if WinExist("ahk_exe chrome.exe")
+    ^!Numpad6::
+    ^!F6::
     {
-        WinActivate, ahk_exe chrome.exe
-    }
+        ; Uncomment next line for debugging only.
+        ;MsgBox, ctrl + alt + F6 Pressed.
 
-    if NOT WinActive("ahk_exe chrome.exe")
-    {
-        MsgBox,, Error, Aborting. chrome.exe is not active.
-    }
+        Clipboard := "" ; Empty the clipboard in preparation for copying.
 
-    ; It is assumed that a Chrome tab with a YouTube Video Player is open.
-    ; Move the mouse to a safe location within the YouTube player.
-    ; "Safe" refers to a location where there is a very high probability that the "Copy video URL
-    ; at current time" feature will be available (as opposed to a Chrome dialog).
-    ; (x,y) of (125,160) seems to work when chrome/YouTube Player window is the smallest or
-    ; largest size for my screen. Assumes Chrome is top-left corner of right-most monitor.
-    MouseMove, 125, 160, 0
+        if WinExist("ahk_exe chrome.exe")
+        {
+            WinActivate, ahk_exe chrome.exe
+        }
 
-    ; Activate the "Copy video URL at current time" feature of the YouTube video player.
-    Click, Right
+        if NOT WinActive("ahk_exe chrome.exe")
+        {
+            MsgBox,, Error, Aborting. chrome.exe is not active.
+        }
 
-    ;x-axis adjustment required to activate list item on the "Copy video URL at current time" menu.
-    ;R so that movement is relative to current mouse position and not top left corner of screen.
-    MouseMove, 10, 100, 0, R
+        ; It is assumed that a Chrome tab with a YouTube Video Player is open.
+        ; Move the mouse to a safe location within the YouTube player.
+        ; "Safe" refers to a location where there is a very high probability that the "Copy video URL
+        ; at current time" feature will be available (as opposed to a Chrome dialog).
+        ; (x,y) of (125,160) seems to work when chrome/YouTube Player window is the smallest or
+        ; largest size for my screen. Assumes Chrome is top-left corner of right-most monitor.
+        MouseMove, 125, 160, 0
 
-    ; Left-click, i.e., activate "Copy video URL at current time" menu item.
-    Click, Left
+        ; Activate the "Copy video URL at current time" feature of the YouTube video player.
+        Click, Right
 
-    ; Copy clipboard contents back to clipboard as text. Precautionary.
-    Clipboard := Clipboard
-    ; Without this wait, macro may experience intermittent failures.
-    ClipWait 1
+        ;x-axis adjustment required to activate list item on the "Copy video URL at current time" menu.
+        ;R so that movement is relative to current mouse position and not top left corner of screen.
+        MouseMove, 10, 100, 0, R
 
-    URL_Candidate := Clipboard
-    ClipWait 1
+        ; Left-click, i.e., activate "Copy video URL at current time" menu item.
+        Click, Left
 
-    ; Uncomment next line for debugging only.
-    ; MsgBox,, Debug, URL_Candidate is: %URL_Candidate%
+        ; Copy clipboard contents back to clipboard as text. Precautionary.
+        Clipboard := Clipboard
+        ; Without this wait, macro may experience intermittent failures.
+        ClipWait 1
 
-    ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
-    If IsURL("YouTube_TimeStamp", URL_Candidate)
-    {
-        CreateOneNoteSourceTag(URL_Candidate)
-    }
-    else
-    {
-        MsgBox,, Error, URL Candidate not URL-like. Try again.
-        MsgBox,, Debug, URL Candidate:`n`n%URL_Candidate%
+        URL_Candidate := Clipboard
+        ClipWait 1
+
+        ; Uncomment next line for debugging only.
+        ; MsgBox,, Debug, URL_Candidate is: %URL_Candidate%
+
+        ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+        If IsURL("YouTube_TimeStamp", URL_Candidate)
+        {
+            CreateOneNoteSourceTag(URL_Candidate)
+        }
+        else
+        {
+            MsgBox,, Error, URL Candidate not URL-like. Try again.
+            MsgBox,, Debug, URL Candidate:`n`n%URL_Candidate%
+            return
+        }
+
         return
     }
-
-    return
 }
+#If
 
 ;;;;;;;;;;;;;
 ; Functions  ;
@@ -824,7 +828,7 @@ IsURL(URL_Type, URL_Candidate)
             ; Uncomment next line for troubelshooting only.
             ;MsgBox,, Debug, Evaluating YouTube URL with TimeStamp.
 
-            If RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9]+\?t=[a-zA-z0-9]+$")
+            If RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9_]+\?t=[a-zA-z0-9]+$")
             {
                 is_match := True
             }
