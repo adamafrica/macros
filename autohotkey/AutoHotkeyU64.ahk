@@ -578,17 +578,18 @@ return
     Hotkey: ctrl + alt + numpad5 or ctrl + alt + F5
 
     Usage:
-        1.
+        1. Copy a link to the clipboard.
+        2. Make OneNote the active application.
+        3. Enter hotkey.
 
     Comments:
-        Developed this macro to speed the process of creating OneNote (source) style
-        hyperlinks from YouTube's share dialog box, where the option to include "Start
-        at [time]" has been checked.
+        This macro is specific to OneNote because of the type of link it creates
+        which is a (source) style link.
 
     Assumptions:
-        1. OneNote is open
-        2. Cursor is at location where link should be created in OneNote.
-        3. There is a valid URL on the Windows clipboard.
+        1. This macro is specific to OneNote.
+        2. OneNote is active.
+        3. There is a URL on the clipboard.
 
     History
     YYYYMMDD        name        - Comment
