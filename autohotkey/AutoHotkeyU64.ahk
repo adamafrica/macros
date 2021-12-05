@@ -267,52 +267,48 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
     HotKey: ctrl + alt + numpad4
 
     Usage:
-    1. In OneNote, place the cursor where you want the link to be inserted.
-    2. Switch to Chrome
-    3. Execute the macro using the following Hot Key: ctrl + alt + numpad4
-    4. URI will be copied from Chrome and a new link will inserted into OneNote at the cursors current location.
+    1. Place the cursor where you want the link to be inserted.
+    2. Execute the macro using the following Hot Key: ctrl + alt + numpad4
+    3. URI will be copied from Chrome and a new link will inserted into the application that was
+       active when the hotkey was initiated.
 
     Comments:
-    Created this macro to help speed up the process of annotating references in OneNote references sections.
-    This macro is a simplified version: "Create a (source) tag - a hyperlink where display text is (source) in
-    OneNote from a URL in Chrome.".
+    Created this macro to help speed up the process of annotating Internet resources.
 
     Assumptions:
 
     History
     20191120        A   - Initial Version
     20211102        A   - Added stacked shortcut (^!F!) for use with 75% keyboard, which has no numpad.
+    20211205        A   - Refactored to allow URL to be pasted into the active application at the time
+                          the hotkey is initiated.
+                          Previously, this hotkey was constrained to OneNote, but since it's
+                          implementation is application agnostic, the OneNote constraint was removed.
 */
 ^!Numpad4::
 ^!F4::
 {
     ; MsgBox,, Debug, Started ; Uncomment for troubleshooting only.
 
+    ; WinGet would seem the logical solution here, but it's deprecated in v2.
+    ; Also the documentation for WinGet suggest WinExist is an easy way to
+    ; get a reference to the active window:
+    ; https://www.autohotkey.com/docs/commands/WinGet.htm
+
+    ; The explanation of the "A" argument comes from this the AutoHotkey documentation:
+    ; https://www.autohotkey.com/docs/misc/WinTitle.htm
+
+    ; Get a reference to the currently active window, as the destination for the URL.
+    win_id := WinExist("A")
+    ; Uncomment next line for debugging only.
+    ; MsgBox,, debug, Window ID: %win_id%
+
     URL_Candidate := GetURLFromChrome()
 
     if IsURL("Regular", URL_Candidate)
     {
-        ; Return to OneNote from the browser.
-        if WinExist("ahk_exe ONENOTE.EXE")
-        {
-            ; MsgBox, OneNote is open. ; Uncomment for troubleshooting only.
-            WinActivate, ahk_exe ONENOTE.EXE
-        }
-        else
-        {
-            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-            return
-        }
-
-        if WinActive("ahk_exe ONENOTE.EXE")
-        {
-            ; {Raw} is required so that special characters and non-ascii characters not dropped.
-            Send {Raw}%URL_Candidate%
-        }
-        else
-        {
-            MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-        }
+        WinActivate, ahk_id %win_id%
+        Send {Raw}%URL_Candidate%
     }
 
     return
@@ -885,6 +881,7 @@ IsURL(URL_Type, URL_Candidate)
     ; MsgBox,, Debug, Windows Title: %Title%
     ; MsgBox,, Debug, Title Match Mode: %A_TitleMatchMode%
     ; MsgBox,, Debug, Title Match Mode Speed: %A_TitleMatchModeSpeed%
+
 
     return
 }
