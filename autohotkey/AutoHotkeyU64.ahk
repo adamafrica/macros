@@ -594,45 +594,42 @@ return
     20211122        a           - Initial Version.
     20211205        a           - Add macro back in after delete. Macro, it turns out, is useful,
                                   but it does need to be refactored in the future to use functions.
+    20211205        a           - Refactor to use functions.
 */
-^!Numpad5::
-^!F5::
+#If WinActive("ahk_exe ONENOTE.EXE")
 {
-    ; Uncomment next line for debugging only.
-    ;MsgBox, F5 Pressed.
-
-    clipboard := clipboard ; Copy clipboard contents back to clipboard as text. Precautionary.
-
-    ; Uncomment for troubleshooting only.
-    ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
-
-    ; Return to OneNote from the browser.
-    if WinExist("ahk_exe ONENOTE.EXE")
+    ^!Numpad5::
+    ^!F5::
     {
-        ; Uncomment next line for troubleshooting only.
-        ; MsgBox, OneNote is open.
-        WinActivate, ahk_exe ONENOTE.EXE
-    }
-    else
-    {
-        MsgBox,, Error, OneNote does not appear to be open. Open it and try again.
-        return
+        ; Uncomment next line for debugging only.
+        ;MsgBox, F5 Pressed.
+
+        clipboard := clipboard ; Copy clipboard contents back to clipboard as text. Precautionary.
+
+        ; Uncomment for troubleshooting only.
+        ; MsgBox,, Debug, Control-C copied the following contents to the clipboard:`n`n%clipboard%
+
+        URL_Candidate := clipboard
+
+        ; Uncomment following line for debug only.
+        ;MsgBox,, Debug, Debug URL_Candidate: %URL_Candidate%
+
+        ; Verify clipboard content to prevent non-URL content from contaminating OneNote link.
+        If IsURL("Regular", URL_Candidate)
+        {
+            CreateOneNoteSourceTag(URL_Candidate)
+        }
+        else
+        {
+            MsgBox,, Error, URL Candidate not URL-like. Try again.
+            MsgBox,, Debug, GetURLFromChrome capture the following URL Candidate:`n`n%URL_Candidate%
+            return
         }
 
-    ; - Only create office style hyperlink if OneNote is active.
-    ; - because this style of hyperlink is specific to Windows Office products.
-    if WinActive("ahk_exe ONENOTE.EXE")
-    {
-        SendInput (source){left 1}^{LEFT}^+{RIGHT}
-        SendInput ^k ; open link diaglog]
-        SendInput ^v ; paste the hyperlink
-        SendInput {enter} ; complete creation of hyperlink.
-        SendInput {right 2} ; So cursor is in good position for typing.
+        return
     }
-
-    return
 }
-
+#If
 
 
 /*
