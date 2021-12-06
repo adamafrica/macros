@@ -27,6 +27,8 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 ;
 ; ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.
 ;
+; ctrl + alt + numpad7 or ctrl + alt + F5 : Format highlighted text as code.
+;
 ; ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.
 ;
 ; ctrl + alt + numpad5 or ctrl + alt + F5 : Create a hyperlink in OneNote from the clipboard.
@@ -90,7 +92,8 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
     help.push("Operating System Version: " A_OSVersion)
     help.push("ctrl + alt + numpad1 : Create a (source) tag - a hyperlink where display text is (source) in OneNote from a URL in Chrome.")
     help.push("ctrl + alt + numpad2 : Inserts a copy of the references table from Template - References.")
-    help.push("ctrl + alt + numpad3 : Formats a code snippet. In OneNote, changes the font to Courier New 10 pt and then reverts to font and font size used before change.")
+    help.push("ctrl + alt + numpad3 : Format OneNote table cell as code")
+    help.push("ctrl + alt + numpad7 : Format OneNote highlighted text as code.")
     help.push("ctrl + alt + numpad4 : Create a hyperlink in OneNote from the URI in the Chrome Omnibox.")
     help.push("ctrl + alt + numpad5 or ctrl + alt + F5 : Create a hyperlink in OneNote from the clipboard.")
     help.push("ctrl + alt + numpad6 or ctrl + alt + F6 : Create a (source) link in OneNote from YouTube with time.")
@@ -393,7 +396,10 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
     3. The code snippet will be formatted and font and font size reverted to state before code snippet formatted.
 
     Comments:
-    Created this macro because I was tired of formatting code snippets in OneNote.
+        1. Created this macro because to simplify/speed the formatting code snippets in OneNote.
+        2. The ^!F7:: is a variation on this macro. This difference between the ^!F7:: macro and
+           this macro is that this macro formats, as code, all text in a OneNote table cell, while
+           the ^!F7:: macro formats highlighted text, no matter where it appears in OneNote.
 
     Assumptions:
     1. In OneNote
@@ -424,7 +430,7 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
         SendInput !hff
 
         ; Capture the current font family so we can revert to it later.
-        clipboard := ; clear the clipboard. ClipWait won't work as expected if there is already somethign on the clipboard, I think.
+        Clipboard := ; clear the clipboard.
         SendInput ^c
         ClipWait
         oldFontFamily := Clipboard
@@ -436,7 +442,7 @@ $^w:: ; Not the Hotkey modifier symbol $. Here this modify prevents infinite loo
         SendInput {Tab}
 
         ; Capture the current font size so we can rever to it later.
-        clipboard := ; clear the clipboard so, ClipWait works as expected.
+        Clipboard := ; clear the clipboard so, ClipWait works as expected.
         SendInput ^c
         ClipWait
         oldFontSize := Clipboard
@@ -723,6 +729,105 @@ return
 }
 #If
 
+/*
+    Description: Format a OneNote snipppet as code.
+
+    Hotkey:
+        ctrl + alt + F7
+        ctrl + alt + numpad7
+
+    Usage:
+        1. Highlight a snippet in OneNote.
+        2. Execute the macro.
+
+    Comments:
+        1. This macro intended for use with OneNote only.
+        2. This macro is a variation on the ^!F3 macro which formats the contents of a table cell
+           as code.
+        3. The difference between this macro is that the ^!F3 macro formats all the contents of a
+           table cell and this macro formats only the highleted text.
+
+    Assumptions:
+        1. OneNote is the active application.
+        2. A snippet to be formatted as text is highlighted.
+
+    History
+    YYYYMMDD        name        - Comment
+
+*/
+#If WinActive("ahk_exe ONENOTE.EXE")
+{
+    ^!F7::
+    numpad7::
+
+    ; These variables can be changed if a different code snippet appearance is desired.
+    newFontFamily = Courier New ; Font Family to use to format snippet.
+    newFontSize = 10  ; Font size to use to format snippet.
+
+    ; Clear the clipboard so existing content doesn't foul process.
+    Clipboard :=
+
+    ; Attempt a copy operation.
+    ; If there is highlighted text, it will be copied.
+    ; If there is no highlighted textd, clipboard should remain empty.
+    SendInput ^c
+    ClipWait, 1
+    If ErrorLevel
+    {
+        MsgBox,, Error, It doesn't appear there was highlighted snippet. Highlight snippet and try again.
+        return
+    }
+
+        ; Activate menu (!) > activate the home menu (h) > activate the font family menu (ff)
+        SendInput !hff
+
+        ; Capture the current font family so we can revert to it later.
+        Clipboard := ; clear the clipboard. ClipWait won't work as expected if there is already somethign on the clipboard, I think.
+        SendInput ^c
+        ClipWait
+        oldFontFamily := Clipboard
+
+        ; Change the font.
+        SendInput %newFontFamily%
+
+        ; Move to the font size box.
+        SendInput {Tab}
+
+        ; Capture the current font size so we can rever to it later.
+        Clipboard := ; clear the clipboard so, ClipWait works as expected.
+        SendInput ^c
+        ClipWait
+        oldFontSize := Clipboard
+
+        ; Change to the new font size.
+        SendInput %newFontSize%
+
+        ; Affect the change to the font size.
+        SendInput {Enter}
+
+        ; Deselect the code snippet so we can change back to the default font family and font size.
+        ; If you don't deselect the text, the font family and size will just be reverted to the original.
+        SendInput {Right}
+
+        ; Activate menu (!) > activate the home menu (h) > activate the font family menu (ff)
+        SendInput !hff
+
+        SendInput %oldFontFamily%
+
+        ; Move to the font size box.
+        SendInput {Tab}
+
+        ; Change to the new font size.
+        SendInput %oldFontSize%
+
+        ; Send enter so the change to font size is made.
+        SendInput {Enter}
+
+    return
+
+}
+#If
+
 ;;;;;;;;;;;;;
 ; Functions  ;
 ;;;;;;;;;;;;;
@@ -881,7 +986,6 @@ IsURL(URL_Type, URL_Candidate)
     ; MsgBox,, Debug, Windows Title: %Title%
     ; MsgBox,, Debug, Title Match Mode: %A_TitleMatchMode%
     ; MsgBox,, Debug, Title Match Mode Speed: %A_TitleMatchModeSpeed%
-
 
     return
 }
