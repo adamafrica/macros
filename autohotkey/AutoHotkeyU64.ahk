@@ -930,7 +930,7 @@ IsURL(URL_Type, URL_Candidate)
             ; Uncomment next line for troubelshooting only.
             ;MsgBox,, Debug, Evaluating YouTube URL with TimeStamp.
 
-            If RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9_]+\?t=[a-zA-z0-9]+$")
+            If RegExMatch(URL_Candidate, "^(https?:\/\/|www\.)[a-zA-Z0-9\-\.]+\.[a-zA-Z]{2,3}\/[a-zA-Z0-9_-]+\?t=[a-zA-z0-9]+$")
             {
                 is_match := True
             }
