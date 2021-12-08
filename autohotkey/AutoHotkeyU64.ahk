@@ -122,7 +122,7 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
         ; If you just use a hostring, aAutoHotKey will appear in the
         ; Omnibox. Add a space after so double-spacing isn't required
         ; when spacebar is used to initiate auto-completion.
-         SendInput {BS}AutoHotkey{SPACE}
+         SendInput {BS}{SPACE}AutoHotkey{SPACE}
     }
     else
     {
@@ -133,6 +133,27 @@ SetWorkingDir %A_ScriptDir%  ; Changes the script's working directory.
 
 ::sha-1::SHA-1 ; love sha-1 (even if it's weak), but hate typing it.
 
+::ha::
+{
+    if WinActive("ahk_exe chrome.exe")
+    {
+        ; So chrome doesn't double up the h of Home.
+         SendInput {BS}{SPACE}Home Assistant{SPACE}
+    }
+    else
+    {
+        SendInput Home Assistant{SPACE}
+    }
+    return
+}
+
+; Windows Logo Key + shift + 1 to send an inverted exclamation point (¡)
+; This HotKey for use with my 75% where numpad is not available for
+; enter alt + 0161 which is how it's normally entered.
+#+1::
+{
+    SendInput {U+00A1}
+}
 
 ; ----------------------------------------------------------------------
 ; Command Window Helpers
